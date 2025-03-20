@@ -1,0 +1,46 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name: api-gateway-service
+  config:
+    activate:
+      on-profile: logging-filter
+  cloud:
+    gateway:
+      routes:
+        - id: first-service
+          uri: http://localhost:8001
+          predicates:
+            - Path=/first-service/**
+          filters:
+#            - AddRequestHeader=first-request, first-request-header-by-yaml
+#            - AddResponseHeader=first-response, first-response-header-from-yaml
+            - CustomFilter
+        - id: second-service
+          uri: http://localhost:8002
+          predicates:
+            - Path=/second-service/**
+          filters:
+#            - AddRequestHeader=second-request, second-request-header-by-yaml
+#            - AddResponseHeader=second-response, second-response-header-from-yaml
+            - name: CustomFilter
+            - name: LoggingFilter
+              args:
+                baseMessage: Hi, there
+                preLogger: true
+                postLogger: true
+
+      default-filters:
+        - name: GlobalFilter
+          args:
+            baseMessage: Spring Cloud Gateway Global Filter
+            preLogger: true
+            postLogger: true
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
