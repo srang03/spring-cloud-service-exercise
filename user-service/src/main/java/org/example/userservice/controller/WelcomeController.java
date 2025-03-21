@@ -21,8 +21,12 @@ public class WelcomeController {
 
     @GetMapping("/check")
     public String status(){
-        return "OK " + env.getProperty("local.server.port");
+        return "OK OK " + env.getProperty("local.server.port")
+                + "\r\nport(server.port): " + env.getProperty("server.port")
+                + "\r\ntoken secret: " + env.getProperty("token.secret")
+                + "\r\ntoken expiration time: " + env.getProperty("token.expiration_time");
     }
+
     @GetMapping("/welcome")
     public String welcome(){
         return env.getProperty("greeting.message");

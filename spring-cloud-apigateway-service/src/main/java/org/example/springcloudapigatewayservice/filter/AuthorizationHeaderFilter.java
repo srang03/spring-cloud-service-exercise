@@ -71,12 +71,7 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
 
     private boolean isJwtValid(String jwt)  {
         byte[] secretKeyBytes = Base64.getEncoder().encode(env.getProperty("token.secret").getBytes());
-        try{
-            Class.forName("io.jsonwebtoken.impl.DefaultJwtParserBuilder");
-            System.out.println("JJWT implementation loaded successfully!");
-        }catch(ClassNotFoundException e){
-            System.out.println("JJWT implementation could not be loaded!");
-        }
+
 
         SecretKey secretKey = Keys.hmacShaKeyFor(secretKeyBytes);
         boolean returnValue = true;
@@ -85,7 +80,6 @@ public class AuthorizationHeaderFilter extends AbstractGatewayFilterFactory<Auth
             JwtParser jwtParser = Jwts.parser()  // ✅ parserBuilder() 대신 parser() 사용
                     .verifyWith(secretKey)  // ✅ 서명 검증
                     .build();
-
             subject = jwtParser.parseClaimsJws(jwt).getBody().getSubject();
         } catch (Exception ex) {
             returnValue = false;

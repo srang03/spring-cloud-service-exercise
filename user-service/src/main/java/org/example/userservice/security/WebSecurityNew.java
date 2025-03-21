@@ -50,11 +50,11 @@ public class WebSecurityNew {
 //        http.csrf(AbstractHttpConfigurer::disable);
 
         http.authorizeHttpRequests((authz) -> authz
-                                .requestMatchers(new AntPathRequestMatcher("/actuator/**")).permitAll()
+                                .requestMatchers("/actuator/**").permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/users", "POST")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/welcome")).permitAll()
-                                .requestMatchers(new AntPathRequestMatcher("/health-check")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/check")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/swagger-resources/**")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()

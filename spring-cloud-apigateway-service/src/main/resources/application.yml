@@ -1,11 +1,35 @@
 server:
   port: 8001
+
 spring:
   application:
     name: api-gateway-service
+  profiles:
+    active: dev
+  config:
+    import: optional:configserver:http://127.0.0.1:8888
   cloud:
+    config:
+      name: ecommerce
+      profile: dev
     gateway:
       routes:
+        - id: user-service-actuator
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/actuator/**
+            - Method=GET,POST
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
+        - id: user-service-check
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/user-service/check
+            - Method=GET
+          filters:
+            - RemoveRequestHeader=Cookie
+            - RewritePath=/user-service/(?<segment>.*), /$\{segment}
         - id: user-service-login
           uri: lb://USER-SERVICE
           predicates:
@@ -55,6 +79,11 @@ spring:
             baeMessage: Spring Cloud Gateway Global Filter
             preLogger: true
             postLogger: true
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
 eureka:
   client:
     register-with-eureka: true
@@ -62,5 +91,11 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka
 
-token:
-  secret: holdupthisisaverysecuresecretkeyforjwt256bits
+management:
+  endpoints:
+    web:
+      exposure:
+        include: refresh, health, beans, httptrace, busrefresh
+
+#token:
+#  secret: holdupthisisaverysecuresecretkeyforjwt256bits
