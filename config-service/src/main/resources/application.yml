@@ -1,27 +1,24 @@
-server:
-  port: 8888
-spring:
-  application:
-    name: config-server
-  rabbitmq:
-    host: 127.0.0.1
-    port: 5672
-    username: guest
-    password: guest
-  cloud:
-    config:
-      server:
-        git:
-          uri: https://github.com/srang03/spring-cloud-config
-          default-label: main  # 여기에 main 브랜치 지정
-      #        native:
-#          search-locations: file:///C:/repo/spring-cloud-service-exercise/git-local-repo
-      name: ecommerce
-  profiles:
-    active: git  # native ?? ???
+  server:
+    port: 8888
+  spring:
+    application:
+      name: config-server
+    rabbitmq:
+      host: 127.0.0.1
+      port: 5672
+      username: guest
+      password: guest
+    cloud:
+      config:
+        server:
+          git:
+            uri: https://github.com/srang03/spring-cloud-config
+            default-label: main  # 여기에 main 브랜치 지정
+    profiles:
+      active: git  # native ?? ???
 
-management:
-  endpoint:
-    web:
-      exposure:
-        include: health, busrefresh
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health,busrefresh

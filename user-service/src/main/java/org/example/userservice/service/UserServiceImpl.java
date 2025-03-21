@@ -8,11 +8,16 @@ import org.example.userservice.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.env.Environment;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -23,11 +28,16 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     BCryptPasswordEncoder bCryptPasswordEncoder;
+    Environment env;
+    RestTemplate restTemplate;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder
+    , Environment env, RestTemplate restTemplate) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.env = env;
+        this.restTemplate = restTemplate;
     }
 
     @Override
@@ -46,9 +56,16 @@ public class UserServiceImpl implements UserService {
     public UserDto retrieveUserById(String userid) {
         UserEntity userEntity = userRepository.findByUserId(userid);
 
-
         UserDto userDto = new ModelMapper().map(userEntity, UserDto.class);
-        List<ResponseOrder> orders = new ArrayList<>();
+
+        String orderUrl = String.format(env.getProperty("order_service.url"), userid) ;
+        ResponseEntity<List<ResponseOrder>> orderListResponse = restTemplate.exchange(orderUrl,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<ResponseOrder>>() {
+                });
+
+        List<ResponseOrder> orders = orderListResponse.getBody();
         userDto.setOrders(orders);
 
         return userDto;
@@ -70,10 +87,16 @@ public class UserServiceImpl implements UserService {
     public UserDto retrieveUserDetailsByEmail(String email) {
         UserEntity userEntity = userRepository.findByEmail(email);
 
-
-
         UserDto userDto = new ModelMapper().map(userEntity, UserDto.class);
-        List<ResponseOrder> orders = new ArrayList<>();
+
+        String orderUrl = String.format(env.getProperty("order_service.url"), userDto.getUserId()) ;
+        ResponseEntity<List<ResponseOrder>> orderListResponse = restTemplate.exchange(orderUrl,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<List<ResponseOrder>>() {
+        });
+
+        List<ResponseOrder> orders = orderListResponse.getBody();
         userDto.setOrders(orders);
 
         return userDto;

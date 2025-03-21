@@ -6,11 +6,11 @@ spring:
     name: user-service
   cloud:
     config:
-      name: ecommerce
+      name: user-service
   config:
     import: optional:configserver:http://127.0.0.1:8888
   profiles:
-    active: dev
+    active: default
   rabbitmq:
     host: 127.0.0.1
     port: 5672
@@ -21,10 +21,10 @@ spring:
       enabled: true
       settings:
         web-allow-others: true
-  datasource:
-    url: jdbc:h2:mem:testdb
-    username: sa
-    password:
+#  datasource:
+#    url: jdbc:h2:mem:testdb
+#    username: sa
+#    password: sa
 
 eureka:
   instance:

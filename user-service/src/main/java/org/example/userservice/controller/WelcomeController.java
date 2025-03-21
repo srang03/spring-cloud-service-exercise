@@ -35,5 +35,12 @@ public class WelcomeController {
     public String greeting(){
         return greetingComponent.getMessage();
     }
+
+    @GetMapping("/test")
+    public String test(){
+
+        return "error4";
+    }
+
 }
 
