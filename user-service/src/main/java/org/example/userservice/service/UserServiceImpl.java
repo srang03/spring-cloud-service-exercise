@@ -1,6 +1,9 @@
 package org.example.userservice.service;
 
+import feign.FeignException;
 import jakarta.ws.rs.NotFoundException;
+import lombok.extern.slf4j.Slf4j;
+import org.example.userservice.client.OrderServiceClient;
 import org.example.userservice.data.dto.UserDto;
 import org.example.userservice.data.entity.UserEntity;
 import org.example.userservice.data.vo.ResponseOrder;
@@ -24,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
@@ -31,13 +35,17 @@ public class UserServiceImpl implements UserService {
     Environment env;
     RestTemplate restTemplate;
 
+    OrderServiceClient orderServiceClient;
+
     @Autowired
     public UserServiceImpl(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder
-    , Environment env, RestTemplate restTemplate) {
+            , Environment env, RestTemplate restTemplate, OrderServiceClient orderServiceClient
+    ) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.env = env;
         this.restTemplate = restTemplate;
+        this.orderServiceClient = orderServiceClient;
     }
 
     @Override
@@ -53,19 +61,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDto retrieveUserById(String userid) {
-        UserEntity userEntity = userRepository.findByUserId(userid);
+    public UserDto retrieveUserById(String userId) {
+        UserEntity userEntity = userRepository.findByUserId(userId);
 
         UserDto userDto = new ModelMapper().map(userEntity, UserDto.class);
 
-        String orderUrl = String.format(env.getProperty("order_service.url"), userid) ;
-        ResponseEntity<List<ResponseOrder>> orderListResponse = restTemplate.exchange(orderUrl,
-                HttpMethod.GET,
-                null,
-                new ParameterizedTypeReference<List<ResponseOrder>>() {
-                });
+//        String orderUrl = String.format(env.getProperty("order_service.url"), userid) ;
+//        ResponseEntity<List<ResponseOrder>> orderListResponse = restTemplate.exchange(orderUrl,
+//                HttpMethod.GET,
+//                null,
+//                new ParameterizedTypeReference<List<ResponseOrder>>() {
+//                });
+//
+//        List<ResponseOrder> orders = orderListResponse.getBody();
 
-        List<ResponseOrder> orders = orderListResponse.getBody();
+        List<ResponseOrder> orders = null;
+        try {
+            orders = orderServiceClient.getOrders(userId);
+        } catch (FeignException ex) {
+            log.error(ex.getMessage());
+        }
+
         userDto.setOrders(orders);
 
         return userDto;
@@ -89,12 +105,12 @@ public class UserServiceImpl implements UserService {
 
         UserDto userDto = new ModelMapper().map(userEntity, UserDto.class);
 
-        String orderUrl = String.format(env.getProperty("order_service.url"), userDto.getUserId()) ;
+        String orderUrl = String.format(env.getProperty("order_service.url"), userDto.getUserId());
         ResponseEntity<List<ResponseOrder>> orderListResponse = restTemplate.exchange(orderUrl,
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<List<ResponseOrder>>() {
-        });
+                });
 
         List<ResponseOrder> orders = orderListResponse.getBody();
         userDto.setOrders(orders);

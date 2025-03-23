@@ -10,7 +10,7 @@ import java.util.List;
 public class ResponseUser {
     private String email;
     private String name;
-    private String userid;
+    private String userId;
 
     List<ResponseOrder> orders;
 }

@@ -47,3 +47,7 @@ management:
 #token:
 #  expiration_time: 3600000
 #  secret: holdupthisisaverysecuresecretkeyforjwt256bits
+
+logging:
+  level:
+    org.example.userservice.client: DEBUG
