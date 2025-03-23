@@ -1,4 +1,4 @@
-package org.example.userservice.client;
+package org.example.userservice.feign.client;
 
 import org.example.userservice.data.vo.ResponseOrder;
 import org.springframework.cloud.openfeign.FeignClient;

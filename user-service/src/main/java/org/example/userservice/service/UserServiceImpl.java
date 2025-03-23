@@ -3,10 +3,11 @@ package org.example.userservice.service;
 import feign.FeignException;
 import jakarta.ws.rs.NotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.example.userservice.client.OrderServiceClient;
+import org.example.userservice.feign.client.OrderServiceClient;
 import org.example.userservice.data.dto.UserDto;
 import org.example.userservice.data.entity.UserEntity;
 import org.example.userservice.data.vo.ResponseOrder;
+import org.example.userservice.feign.error.FeignErrorDecoder;
 import org.example.userservice.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -75,13 +76,14 @@ public class UserServiceImpl implements UserService {
 //
 //        List<ResponseOrder> orders = orderListResponse.getBody();
 
-        List<ResponseOrder> orders = null;
-        try {
-            orders = orderServiceClient.getOrders(userId);
-        } catch (FeignException ex) {
-            log.error(ex.getMessage());
-        }
+//        List<ResponseOrder> orders = null;
+//        try {
+//            orders = orderServiceClient.getOrders(userId);
+//        } catch (FeignException ex) {
+//            log.error(ex.getMessage());
+//        }
 
+        List<ResponseOrder> orders = orderServiceClient.getOrders(userId);
         userDto.setOrders(orders);
 
         return userDto;
