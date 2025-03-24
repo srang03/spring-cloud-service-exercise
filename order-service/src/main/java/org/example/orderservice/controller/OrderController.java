@@ -1,5 +1,6 @@
 package org.example.orderservice.controller;
 
+import org.example.orderservice.messagequeue.KafkaOrdersProducer;
 import org.example.orderservice.messagequeue.KafkaProducer;
 import org.example.orderservice.model.OrderDto;
 import org.example.orderservice.model.RequestOrder;
@@ -14,17 +15,20 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/order-service")
 public class OrderController {
     private final OrderService orderService;
     private KafkaProducer kafkaProducer;
+    private KafkaOrdersProducer kafkaOrdersProducer;
 
     @Autowired
-    public OrderController(OrderService orderService, KafkaProducer kafkaProducer) {
+    public OrderController(OrderService orderService, KafkaProducer kafkaProducer, KafkaOrdersProducer kafkaOrdersProducer) {
         this.orderService = orderService;
         this.kafkaProducer = kafkaProducer;
+        this.kafkaOrdersProducer = kafkaOrdersProducer;
     }
 
     @PostMapping("/{user_id}/orders")
@@ -37,12 +41,20 @@ public class OrderController {
         // jpa 작업
         OrderDto orderDto = modelMapper.map(requestOrder, OrderDto.class);
         orderDto.setUserId(userId);
-        orderService.createOrder(orderDto);
+
+
+//        orderService.createOrder(orderDto);
+//        ResponseOrder responseOrder = modelMapper.map(orderDto, ResponseOrder.class);
+
+        // send this order the kafka
+        // Service 로직
+        orderDto.setOrderId(UUID.randomUUID().toString());
+        orderDto.setTotalPrice(orderDto.getQty() * orderDto.getUnitPrice());
 
         ResponseOrder responseOrder = modelMapper.map(orderDto, ResponseOrder.class);
 
-        // send this order the kafka
         kafkaProducer.send("example-catalog-topic", orderDto);
+        kafkaOrdersProducer.send("orders", orderDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseOrder);
     }
 
