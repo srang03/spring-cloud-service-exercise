@@ -1,0 +1,10 @@
+FROM confluentinc/cp-kafka-connect:7.3.0
+
+# Kafka Connect JDBC 커넥터 설치
+RUN confluent-hub install --no-prompt confluentinc/kafka-connect-jdbc:10.7.11
+
+# MariaDB JDBC 드라이버 추가 (JDBC 커넥터 폴더 안으로!)
+RUN curl -L https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/2.7.2/mariadb-java-client-2.7.2.jar \
+    -o /usr/share/confluent-hub-components/confluentinc-kafka-connect-jdbc/lib/mariadb-java-client-2.7.2.jar
+
+ENV CONNECT_PLUGIN_PATH="/usr/share/confluent-hub-components"
