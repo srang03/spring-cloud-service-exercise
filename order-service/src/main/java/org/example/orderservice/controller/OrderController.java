@@ -1,5 +1,6 @@
 package org.example.orderservice.controller;
 
+import org.example.orderservice.messagequeue.KafkaProducer;
 import org.example.orderservice.model.OrderDto;
 import org.example.orderservice.model.RequestOrder;
 import org.example.orderservice.model.ResponseOrder;
@@ -9,6 +10,7 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -17,10 +19,12 @@ import java.util.ArrayList;
 @RequestMapping("/order-service")
 public class OrderController {
     private final OrderService orderService;
+    private KafkaProducer kafkaProducer;
 
     @Autowired
-    public OrderController(OrderService orderService) {
+    public OrderController(OrderService orderService, KafkaProducer kafkaProducer) {
         this.orderService = orderService;
+        this.kafkaProducer = kafkaProducer;
     }
 
     @PostMapping("/{user_id}/orders")
@@ -30,11 +34,15 @@ public class OrderController {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
 
+        // jpa 작업
         OrderDto orderDto = modelMapper.map(requestOrder, OrderDto.class);
         orderDto.setUserId(userId);
         orderService.createOrder(orderDto);
 
         ResponseOrder responseOrder = modelMapper.map(orderDto, ResponseOrder.class);
+
+        // send this order the kafka
+        kafkaProducer.send("example-catalog-topic", orderDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(responseOrder);
     }
 

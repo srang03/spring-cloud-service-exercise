@@ -6,36 +6,36 @@ services:
     container_name: my-mariadb
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword      # 루트 비밀번호
-      MYSQL_DATABASE: mydb                   # 초기 데이터베이스 
-      MYSQL_USER: user                       # 추가 사용자
-      MYSQL_PASSWORD: userpassword           # 사용자 비밀번호
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: userpassword
     ports:
       - "3306:3306"
     volumes:
-      - mariadb_data:/var/lib/mysql          # 데이터 영속성 유지
+      - mariadb_data:/var/lib/mysql
     command: 
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
       - --max_connections=1000
     networks:
-      - mariadb-network
+      - kafka-network
 
-  # Adminer (가벼운 데이터베이스 관리 UI)
   adminer:
     image: adminer:latest
     container_name: my-adminer
     restart: always
     ports:
-      - "9090:8080"                          # 9090 포트로 접근
+      - "9090:8080"
     depends_on:
       - mariadb
     networks:
-      - mariadb-network
+      - kafka-network
 
 volumes:
-  mariadb_data:                              # 볼륨 정의
+  mariadb_data:
 
 networks:
-  mariadb-network:
+  kafka-network:
+    name: kafka-network
     driver: bridge

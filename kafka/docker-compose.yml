@@ -1,37 +1,6 @@
 version: '3.8'
 
 services:
-  mariadb:
-    image: mariadb:latest
-    container_name: my-mariadb
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: mydb
-      MYSQL_USER: user
-      MYSQL_PASSWORD: userpassword
-    ports:
-      - "3306:3306"
-    volumes:
-      - mariadb_data:/var/lib/mysql
-    command: 
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
-      - --max_connections=1000
-    networks:
-      - kafka-network
-
-  adminer:
-    image: adminer:latest
-    container_name: my-adminer
-    restart: always
-    ports:
-      - "9090:8080"
-    depends_on:
-      - mariadb
-    networks:
-      - kafka-network
-
   zookeeper-0:
     image: bitnami/zookeeper:3.9.2
     container_name: zookeeper-0
@@ -70,7 +39,6 @@ services:
     depends_on:
       - kafka-0
       - zookeeper-0
-      - mariadb
     environment:
       CONNECT_BOOTSTRAP_SERVERS: 'kafka-0:9092'
       CONNECT_REST_ADVERTISED_HOST_NAME: 'kafka-connect'
@@ -107,9 +75,8 @@ services:
       - kafka-network
 
 volumes:
-  mariadb_data:
   kafka_connect_plugins:
 
 networks:
   kafka-network:
-    driver: bridge
+    external: true
